@@ -208,3 +208,6 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Recent Changes
+- 001-todo-console-app: Implemented Phase I - Todo In-Memory Python Console Application with full CRUD functionality, CLI interface, and in-memory task management
