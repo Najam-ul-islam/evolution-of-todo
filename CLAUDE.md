@@ -210,4 +210,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
-- 001-todo-console-app: Implemented Phase I - Todo In-Memory Python Console Application with full CRUD functionality, CLI interface, and in-memory task management
+- 001-persistent-storage: Added Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, asyncpg 0.29.0+, psycopg2-binary 2.9.7+
+- 001-restful-api: Added Python 3.11+ + FastAPI 0.104+, python-jose 3.3.0+, passlib 1.7.4+, SQLModel 0.0.16+
+- 001-backend-scaffolding: Added Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, uv 0.2+
+
+## Active Technologies
+- Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, asyncpg 0.29.0+, psycopg2-binary 2.9.7+ (001-persistent-storage)
+- PostgreSQL (NeonDB) - configured via DATABASE_URL environment variable (001-persistent-storage)
