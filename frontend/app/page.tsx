@@ -11,7 +11,7 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.push('/todos');
+        router.push('/dashboard'); // Redirect to dashboard instead of todos
       } else {
         router.push('/sign-in');
       }
