@@ -40,8 +40,8 @@ test = [
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest>=7.0.0",
     "httpx>=0.25.0",
     "black>=23.0.0",
