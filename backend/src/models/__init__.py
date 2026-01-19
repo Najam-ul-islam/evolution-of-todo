@@ -1,5 +1,6 @@
 from .todo import Todo, TodoCreate, TodoRead, TodoUpdate
 from .user import User, UserCreate, UserRead, UserUpdate, UserLogin
+from .conversation import Conversation, Message, ToolCall, RoleType
 
 __all__ = [
     "Todo",
@@ -10,5 +11,9 @@ __all__ = [
     "UserCreate",
     "UserRead",
     "UserUpdate",
-    "UserLogin"
+    "UserLogin",
+    "Conversation",
+    "Message",
+    "ToolCall",
+    "RoleType"
 ]

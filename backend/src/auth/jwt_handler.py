@@ -6,11 +6,11 @@ from pydantic import BaseModel
 from ..config.settings import settings  # Import settings to get secret from environment
 
 
-# JWT configuration - use secret from environment
+# JWT configuration - use settings from environment
 SECRET_KEY = settings.jwt_secret
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
-REFRESH_TOKEN_EXPIRE_HOURS = 24  # 24 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_access_token_expire_minutes  # Configurable via environment
+REFRESH_TOKEN_EXPIRE_HOURS = settings.jwt_refresh_token_expire_hours  # Configurable via environment
 
 
 class TokenData(BaseModel):

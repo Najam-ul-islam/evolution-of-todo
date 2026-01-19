@@ -98,6 +98,15 @@ app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
 app.include_router(v1_router, prefix="/api/v1", tags=["todos"])
 app.include_router(v2_user_tasks_router, prefix="/api/v2", tags=["user-tasks-v2"])
 
+# Include chat router for conversational bot
+try:
+    from .api.v1.chat import router as chat_router
+    app.include_router(chat_router, prefix="/api/{user_id}", tags=["chat"])
+except ImportError as e:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning(f"Chat router not found. Skipping chat API endpoints. Error: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
