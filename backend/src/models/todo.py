@@ -14,7 +14,7 @@ class TodoBase(SQLModel):
 
 class Todo(TodoBase, table=True):
     id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    user_id: UUID = Field(foreign_key="user.id", index=True)  # Foreign key reference to user table
+    user_id: Optional[str] = Field(default=None, max_length=255, index=True)  # Changed from UUID to string
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
@@ -25,7 +25,7 @@ class TodoCreate(TodoBase):
 
 class TodoRead(TodoBase):
     id: UUID
-    user_id: UUID
+    user_id: Optional[str]  # Changed from UUID to string
     created_at: datetime
     updated_at: datetime
 

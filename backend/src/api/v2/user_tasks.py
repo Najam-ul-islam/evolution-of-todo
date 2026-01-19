@@ -42,7 +42,7 @@ async def get_user_tasks(
     # Verify that the requested user ID matches the authenticated user ID
     await verify_user_match(user_id, current_user_id)
 
-    tasks = UserTaskService.get_tasks_by_user(session, user_id, skip, limit)
+    tasks = await UserTaskService.get_tasks_by_user(session, user_id, skip, limit)
     return tasks
 
 
@@ -69,7 +69,7 @@ async def create_user_task(
     await verify_user_match(user_id, current_user_id)
 
     # Create the task for the user
-    todo = UserTaskService.create_task(session, user_id, todo_create)
+    todo = await UserTaskService.create_task(session, user_id, todo_create)
     return todo
 
 
@@ -96,7 +96,7 @@ async def get_user_task(
     await verify_user_match(user_id, current_user_id)
 
     # Get the specific task for the user
-    todo = UserTaskService.get_task_by_id(session, user_id, task_id)
+    todo = await UserTaskService.get_task_by_id(session, user_id, task_id)
     return todo
 
 
@@ -125,7 +125,7 @@ async def update_user_task(
     await verify_user_match(user_id, current_user_id)
 
     # Update the specific task for the user
-    todo = UserTaskService.update_task(session, user_id, task_id, todo_update)
+    todo = await UserTaskService.update_task(session, user_id, task_id, todo_update)
     return todo
 
 
@@ -149,7 +149,7 @@ async def delete_user_task(
     await verify_user_match(user_id, current_user_id)
 
     # Delete the specific task for the user
-    UserTaskService.delete_task(session, user_id, task_id)
+    await UserTaskService.delete_task(session, user_id, task_id)
 
 
 @router.patch("/{task_id}/complete", response_model=TodoRead)
@@ -175,5 +175,5 @@ async def toggle_task_completion(
     await verify_user_match(user_id, current_user_id)
 
     # Toggle the completion status of the specific task
-    todo = UserTaskService.toggle_task_completion(session, user_id, task_id)
+    todo = await UserTaskService.toggle_task_completion(session, user_id, task_id)
     return todo

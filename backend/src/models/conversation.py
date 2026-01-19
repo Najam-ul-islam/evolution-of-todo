@@ -19,7 +19,7 @@ class Conversation(Base, table=True):
     __tablename__ = "conversations"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: UUID = Field(description="Foreign key linking to the user who owns this conversation")
+    user_id: str = Field(max_length=255, description="Foreign key linking to the user who owns this conversation")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

@@ -9,7 +9,7 @@ from sqlmodel import Session
 
 from src.main import app
 from src.models.todo import Todo, TodoCreate
-from src.utils.database import engine
+from src.database.connection import sync_engine as engine
 
 
 @pytest.fixture

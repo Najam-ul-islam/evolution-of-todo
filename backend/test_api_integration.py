@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from src.main import app
-from src.utils.database import engine, get_session
+from src.utils.database import sync_engine as engine
 from src.models.todo import Todo, TodoCreate
 from src.auth.jwt_handler import create_access_token
 

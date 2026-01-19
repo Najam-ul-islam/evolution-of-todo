@@ -85,41 +85,109 @@ class AIAgentService:
             # Return an error response
             return f"Sorry, I encountered an error processing your request: {str(e)}", []
 
-    async def add_todo_item(self, task: str) -> Dict[str, Any]:
+    async def add_task(self, task: str) -> Dict[str, Any]:
         """
-        Mock implementation of a tool that adds a todo item.
-        In a real implementation, this would call the actual todo service.
+        Implementation of a tool that adds a task.
+        This method would interface with the actual task service.
         """
-        # This is a mock implementation - in reality, this would interface with the actual todo system
+        # In a real implementation, this would call the actual task service
+        # For now, return a mock implementation
         return {
             "success": True,
             "task_added": task,
-            "todo_id": 123  # Mock ID
+            "task_id": 123  # Mock ID
         }
 
-    async def get_todo_list(self) -> Dict[str, Any]:
+    async def list_tasks(self) -> Dict[str, Any]:
         """
-        Mock implementation of a tool that gets the todo list.
+        Implementation of a tool that gets the task list.
         """
-        # This is a mock implementation
+        # This would interface with the actual task service
+        # For now, return a mock implementation
         return {
             "success": True,
-            "todos": [
-                {"id": 1, "task": "Buy groceries", "completed": False},
-                {"id": 2, "task": "Walk the dog", "completed": True}
+            "tasks": [
+                {"id": 1, "title": "Buy groceries", "completed": False},
+                {"id": 2, "title": "Walk the dog", "completed": True}
             ]
         }
 
-    async def complete_todo_item(self, todo_id: int) -> Dict[str, Any]:
+    async def complete_task(self, task_id: int) -> Dict[str, Any]:
         """
-        Mock implementation of a tool that marks a todo item as complete.
+        Implementation of a tool that marks a task as complete.
         """
-        # This is a mock implementation
+        # This would interface with the actual task service
+        # For now, return a mock implementation
         return {
             "success": True,
-            "todo_id": todo_id,
+            "task_id": task_id,
             "completed": True
         }
+
+    async def delete_task(self, task_id: int) -> Dict[str, Any]:
+        """
+        Implementation of a tool that deletes a task.
+        """
+        # This would interface with the actual task service
+        # For now, return a mock implementation
+        return {
+            "success": True,
+            "task_id": task_id,
+            "deleted": True
+        }
+
+    async def update_task(self, task_id: int, title: str = None, description: str = None) -> Dict[str, Any]:
+        """
+        Implementation of a tool that updates a task.
+        """
+        # This would interface with the actual task service
+        # For now, return a mock implementation
+        result = {
+            "success": True,
+            "task_id": task_id
+        }
+        if title:
+            result["title_updated"] = title
+        if description:
+            result["description_updated"] = description
+
+        return result
+
+    def detect_ambiguous_request(self, query: str, available_tasks: list) -> bool:
+        """
+        Detect if a user query refers to multiple tasks ambiguously.
+        For example: "Complete the grocery task" when multiple grocery tasks exist.
+        """
+        query_lower = query.lower()
+        task_titles = [task.get('title', '').lower() for task in available_tasks if isinstance(task, dict)]
+
+        # Count how many tasks match the query keywords
+        matched_tasks = []
+        for title in task_titles:
+            if any(keyword in title for keyword in query_lower.split()):
+                matched_tasks.append(title)
+
+        # If multiple tasks match, the request is ambiguous
+        return len(matched_tasks) > 1
+
+    def generate_clarification_request(self, query: str, available_tasks: list) -> str:
+        """
+        Generate a clarification request when the user query is ambiguous.
+        """
+        query_lower = query.lower()
+        matching_tasks = []
+
+        for task in available_tasks:
+            if isinstance(task, dict) and 'title' in task:
+                task_title = task['title'].lower()
+                if any(keyword in task_title for keyword in query_lower.split()):
+                    matching_tasks.append(task['title'])
+
+        if matching_tasks:
+            task_list = ", ".join([f"'{task}'" for task in matching_tasks])
+            return f"Which task did you mean? I found multiple matches: {task_list}. Please be more specific."
+        else:
+            return f"I couldn't find any tasks matching your request: '{query}'. Please check the task name."
 
     def get_available_tools(self) -> List[Dict[str, Any]]:
         """
@@ -129,14 +197,14 @@ class AIAgentService:
             {
                 "type": "function",
                 "function": {
-                    "name": "add_todo_item",
-                    "description": "Add a new todo item to the user's list",
+                    "name": "add_task",
+                    "description": "Add a new task to the user's list",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "task": {
                                 "type": "string",
-                                "description": "The task to add to the todo list"
+                                "description": "The task to add to the user's list"
                             }
                         },
                         "required": ["task"]
@@ -146,8 +214,8 @@ class AIAgentService:
             {
                 "type": "function",
                 "function": {
-                    "name": "get_todo_list",
-                    "description": "Get the user's current todo list",
+                    "name": "list_tasks",
+                    "description": "Get the user's current task list",
                     "parameters": {
                         "type": "object",
                         "properties": {}
@@ -157,17 +225,59 @@ class AIAgentService:
             {
                 "type": "function",
                 "function": {
-                    "name": "complete_todo_item",
-                    "description": "Mark a todo item as complete",
+                    "name": "complete_task",
+                    "description": "Mark a task as complete",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "todo_id": {
+                            "task_id": {
                                 "type": "integer",
-                                "description": "The ID of the todo item to mark as complete"
+                                "description": "The ID of the task to mark as complete"
                             }
                         },
-                        "required": ["todo_id"]
+                        "required": ["task_id"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "delete_task",
+                    "description": "Delete a task from the user's list",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "integer",
+                                "description": "The ID of the task to delete"
+                            }
+                        },
+                        "required": ["task_id"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "update_task",
+                    "description": "Update an existing task in the user's list",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "task_id": {
+                                "type": "integer",
+                                "description": "The ID of the task to update"
+                            },
+                            "title": {
+                                "type": "string",
+                                "description": "The new title for the task (optional)"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "The new description for the task (optional)"
+                            }
+                        },
+                        "required": ["task_id"]
                     }
                 }
             }

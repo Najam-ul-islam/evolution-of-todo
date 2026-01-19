@@ -4,7 +4,8 @@ User Task Service for the Todo API.
 This module provides business logic for user-specific task operations with proper user isolation.
 """
 from typing import List, Optional
-from sqlmodel import Session, select
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import HTTPException, status
 
 from ..models.todo import Todo, TodoCreate, TodoUpdate
@@ -20,7 +21,7 @@ class UserTaskService:
     """
 
     @staticmethod
-    def get_tasks_by_user(session: Session, user_id: str, skip: int = 0, limit: int = 100) -> List[Todo]:
+    async def get_tasks_by_user(session: AsyncSession, user_id: str, skip: int = 0, limit: int = 100) -> List[Todo]:
         """
         Get all tasks for a specific user.
 
@@ -39,11 +40,12 @@ class UserTaskService:
             .offset(skip)
             .limit(limit)
         )
-        tasks = session.exec(statement).all()
+        result = await session.exec(statement)
+        tasks = result.all()
         return tasks
 
     @staticmethod
-    def create_task(session: Session, user_id: str, todo_create: TodoCreate) -> Todo:
+    async def create_task(session: AsyncSession, user_id: str, todo_create: TodoCreate) -> Todo:
         """
         Create a new task for a specific user.
 
@@ -55,16 +57,21 @@ class UserTaskService:
         Returns:
             Created Todo object
         """
-        todo_data = todo_create.dict()
+        # Convert using model_dump for newer SQLModel versions
+        if hasattr(todo_create, 'model_dump'):
+            todo_data = todo_create.model_dump()
+        else:
+            todo_data = todo_create.dict()
+
         todo_data['user_id'] = user_id
         todo = Todo(**todo_data)
         session.add(todo)
-        session.commit()
-        session.refresh(todo)
+        await session.commit()
+        await session.refresh(todo)
         return todo
 
     @staticmethod
-    def get_task_by_id(session: Session, user_id: str, task_id: int) -> Todo:
+    async def get_task_by_id(session: AsyncSession, user_id: str, task_id: int) -> Todo:
         """
         Get a specific task by ID for a specific user.
 
@@ -80,7 +87,8 @@ class UserTaskService:
             HTTPException: If task not found or user not authorized
         """
         statement = select(Todo).where(Todo.id == task_id, Todo.user_id == user_id)
-        todo = session.exec(statement).first()
+        result = await session.exec(statement)
+        todo = result.first()
 
         if not todo:
             raise HTTPException(
@@ -91,7 +99,7 @@ class UserTaskService:
         return todo
 
     @staticmethod
-    def update_task(session: Session, user_id: str, task_id: int, todo_update: TodoUpdate) -> Todo:
+    async def update_task(session: AsyncSession, user_id: str, task_id: int, todo_update: TodoUpdate) -> Todo:
         """
         Update a specific task by ID for a specific user.
 
@@ -108,7 +116,8 @@ class UserTaskService:
             HTTPException: If task not found or user not authorized
         """
         statement = select(Todo).where(Todo.id == task_id, Todo.user_id == user_id)
-        todo = session.exec(statement).first()
+        result = await session.exec(statement)
+        todo = result.first()
 
         if not todo:
             raise HTTPException(
@@ -116,18 +125,22 @@ class UserTaskService:
                 detail="Task not found"
             )
 
-        # Update the todo with new values
-        update_data = todo_update.dict(exclude_unset=True)
+        # Update the todo with new values using model_dump for newer SQLModel versions
+        if hasattr(todo_update, 'model_dump'):
+            update_data = todo_update.model_dump(exclude_unset=True)
+        else:
+            update_data = todo_update.dict(exclude_unset=True)
+
         for field, value in update_data.items():
             setattr(todo, field, value)
 
         session.add(todo)
-        session.commit()
-        session.refresh(todo)
+        await session.commit()
+        await session.refresh(todo)
         return todo
 
     @staticmethod
-    def delete_task(session: Session, user_id: str, task_id: int) -> bool:
+    async def delete_task(session: AsyncSession, user_id: str, task_id: int) -> bool:
         """
         Delete a specific task by ID for a specific user.
 
@@ -143,7 +156,8 @@ class UserTaskService:
             HTTPException: If task not found or user not authorized
         """
         statement = select(Todo).where(Todo.id == task_id, Todo.user_id == user_id)
-        todo = session.exec(statement).first()
+        result = await session.exec(statement)
+        todo = result.first()
 
         if not todo:
             raise HTTPException(
@@ -151,12 +165,12 @@ class UserTaskService:
                 detail="Task not found"
             )
 
-        session.delete(todo)
-        session.commit()
+        await session.delete(todo)
+        await session.commit()
         return True
 
     @staticmethod
-    def toggle_task_completion(session: Session, user_id: str, task_id: int) -> Todo:
+    async def toggle_task_completion(session: AsyncSession, user_id: str, task_id: int) -> Todo:
         """
         Toggle the completion status of a specific task for a specific user.
 
@@ -172,7 +186,8 @@ class UserTaskService:
             HTTPException: If task not found or user not authorized
         """
         statement = select(Todo).where(Todo.id == task_id, Todo.user_id == user_id)
-        todo = session.exec(statement).first()
+        result = await session.exec(statement)
+        todo = result.first()
 
         if not todo:
             raise HTTPException(
@@ -183,12 +198,12 @@ class UserTaskService:
         # Toggle the completion status
         todo.completed = not todo.completed
         session.add(todo)
-        session.commit()
-        session.refresh(todo)
+        await session.commit()
+        await session.refresh(todo)
         return todo
 
     @staticmethod
-    def verify_user_access_to_task(session: Session, user_id: str, task_id: int) -> bool:
+    async def verify_user_access_to_task(session: AsyncSession, user_id: str, task_id: int) -> bool:
         """
         Verify that a user has access to a specific task.
 
@@ -201,11 +216,12 @@ class UserTaskService:
             True if user has access to the task, False otherwise
         """
         statement = select(Todo).where(Todo.id == task_id, Todo.user_id == user_id)
-        todo = session.exec(statement).first()
+        result = await session.exec(statement)
+        todo = result.first()
         return todo is not None
 
     @staticmethod
-    def verify_user_exists(session: Session, user_id: str) -> bool:
+    async def verify_user_exists(session: AsyncSession, user_id: str) -> bool:
         """
         Verify that a user exists (has at least one task).
 
@@ -217,5 +233,6 @@ class UserTaskService:
             True if user exists (has tasks), False otherwise
         """
         statement = select(Todo).where(Todo.user_id == user_id).limit(1)
-        todo = session.exec(statement).first()
+        result = await session.exec(statement)
+        todo = result.first()
         return todo is not None

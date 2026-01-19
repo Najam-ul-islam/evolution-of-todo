@@ -20,6 +20,8 @@ dependencies = [
     "pytest-asyncio>=1.3.0",
     "openai>=2.15.0",
     "alembic>=1.18.1",
+    "requests>=2.31.0",
+    "aiosqlite>=0.19.0",
 ]
 readme = "README.md"
 requires-python = ">=3.11"
@@ -50,3 +52,18 @@ dev = [
     "isort>=5.0.0",
     "flake8>=6.0.0",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "asyncio: marks tests as asyncio",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/conftest.py"]

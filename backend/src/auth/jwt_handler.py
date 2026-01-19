@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
 from fastapi import HTTPException, status
@@ -41,11 +41,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         to_encode["user_id"] = str(to_encode["user_id"])
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    to_encode.update({"exp": expire, "iat": datetime.utcnow()})
+    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc)})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -68,11 +68,11 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) 
         to_encode["user_id"] = str(to_encode["user_id"])
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(hours=REFRESH_TOKEN_EXPIRE_HOURS)
+        expire = datetime.now(timezone.utc) + timedelta(hours=REFRESH_TOKEN_EXPIRE_HOURS)
 
-    to_encode.update({"exp": expire, "iat": datetime.utcnow(), "type": "refresh"})
+    to_encode.update({"exp": expire, "iat": datetime.now(timezone.utc), "type": "refresh"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -91,8 +91,8 @@ def verify_token(token: str) -> Optional[TokenData]:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
         # Check if token is expired
-        exp_time = datetime.utcfromtimestamp(payload.get("exp"))
-        if datetime.utcnow() > exp_time:
+        exp_time = datetime.fromtimestamp(payload.get("exp"), tz=timezone.utc)
+        if datetime.now(timezone.utc) > exp_time:
             return None
 
         user_id: str = payload.get("user_id")
@@ -119,8 +119,8 @@ def verify_refresh_token(token: str) -> Optional[TokenData]:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
         # Check if token is expired
-        exp_time = datetime.utcfromtimestamp(payload.get("exp"))
-        if datetime.utcnow() > exp_time:
+        exp_time = datetime.fromtimestamp(payload.get("exp"), tz=timezone.utc)
+        if datetime.now(timezone.utc) > exp_time:
             return None
 
         # Verify this is a refresh token
