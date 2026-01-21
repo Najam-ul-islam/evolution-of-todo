@@ -19,7 +19,20 @@ class AuthService extends ApiService {
         body: JSON.stringify({ email, password }),
       });
 
-      const responseData = await response.json();
+      let responseData;
+      // Check if the response is JSON before parsing
+      if (response.headers.get('content-type')?.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        // If response is not JSON, get text response
+        const responseText = await response.text();
+        console.warn('Response is not JSON, got:', responseText);
+        // Create a generic error response
+        responseData = {
+          detail: responseText || 'Response is not in JSON format',
+          message: responseText || 'Invalid response format'
+        };
+      }
 
       if (!response.ok) {
         // Handle different error response formats
@@ -83,7 +96,20 @@ class AuthService extends ApiService {
         body: JSON.stringify({ email, password }),
       });
 
-      const responseData = await response.json();
+      let responseData;
+      // Check if the response is JSON before parsing
+      if (response.headers.get('content-type')?.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        // If response is not JSON, get text response
+        const responseText = await response.text();
+        console.warn('Response is not JSON, got:', responseText);
+        // Create a generic error response
+        responseData = {
+          detail: responseText || 'Response is not in JSON format',
+          message: responseText || 'Invalid response format'
+        };
+      }
 
       if (!response.ok) {
         // Handle different error response formats
@@ -124,7 +150,23 @@ class AuthService extends ApiService {
         };
       }
 
-      const userData = await userResponse.json();
+      let userData;
+      // Check if the response is JSON before parsing
+      if (userResponse.headers.get('content-type')?.includes('application/json')) {
+        userData = await userResponse.json();
+      } else {
+        // If response is not JSON, get text response
+        const responseText = await userResponse.text();
+        console.warn('Response is not JSON, got:', responseText);
+        // Create a generic user data response
+        userData = {
+          id: '',
+          email: email, // Use the email from login
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_active: true
+        };
+      }
 
       // Create user object from response
       const user: User = {
@@ -225,7 +267,23 @@ class AuthService extends ApiService {
         };
       }
 
-      const userData = await response.json();
+      let userData;
+      // Check if the response is JSON before parsing
+      if (response.headers.get('content-type')?.includes('application/json')) {
+        userData = await response.json();
+      } else {
+        // If response is not JSON, get text response
+        const responseText = await response.text();
+        console.warn('Response is not JSON, got:', responseText);
+        // Create a generic error response
+        userData = {
+          id: '',
+          email: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_active: false
+        };
+      }
 
       const user: User = {
         id: userData.id,

@@ -10,7 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Todo } from '@/types';
 import todoService from '@/services/todoService';
-import { LogOut, CheckCircle, Circle, Calendar, TrendingUp, Plus } from 'lucide-react';
+import LogOut from 'lucide-react/dist/esm/icons/log-out';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import Circle from 'lucide-react/dist/esm/icons/circle';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up';
+import Plus from 'lucide-react/dist/esm/icons/plus';
 
 export default function TodosPage() {
   const { user, loading, signOut } = useAuth();
@@ -23,7 +28,10 @@ export default function TodosPage() {
     if (!loading && !user) {
       router.push('/sign-in');
     } else if (user) {
-      loadTodos();
+      const fetchTodos = async () => {
+        await loadTodos();
+      };
+      fetchTodos();
     }
   }, [user, loading, router]);
 

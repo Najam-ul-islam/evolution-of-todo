@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 from ..config.settings import settings  # Import settings to get secret from environment
@@ -90,18 +91,20 @@ def verify_token(token: str) -> Optional[TokenData]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
-        # Check if token is expired
-        exp_time = datetime.fromtimestamp(payload.get("exp"), tz=timezone.utc)
-        if datetime.now(timezone.utc) > exp_time:
-            return None
-
         user_id: str = payload.get("user_id")
         if user_id is None:
             return None
 
         token_data = TokenData(user_id=user_id)
         return token_data
-    except jwt.JWTError:
+    except ExpiredSignatureError:
+        # Token has expired - PyJWT automatically checks expiration
+        return None
+    except InvalidTokenError:
+        # Token is invalid for other reasons (malformed, invalid signature, etc.)
+        return None
+    except Exception:
+        # Catch any other potential JWT-related exceptions
         return None
 
 
@@ -118,11 +121,6 @@ def verify_refresh_token(token: str) -> Optional[TokenData]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
-        # Check if token is expired
-        exp_time = datetime.fromtimestamp(payload.get("exp"), tz=timezone.utc)
-        if datetime.now(timezone.utc) > exp_time:
-            return None
-
         # Verify this is a refresh token
         token_type = payload.get("type")
         if token_type != "refresh":
@@ -134,5 +132,12 @@ def verify_refresh_token(token: str) -> Optional[TokenData]:
 
         token_data = TokenData(user_id=user_id)
         return token_data
-    except jwt.JWTError:
+    except ExpiredSignatureError:
+        # Token has expired - PyJWT automatically checks expiration
+        return None
+    except InvalidTokenError:
+        # Token is invalid for other reasons (malformed, invalid signature, etc.)
+        return None
+    except Exception:
+        # Catch any other potential JWT-related exceptions
         return None

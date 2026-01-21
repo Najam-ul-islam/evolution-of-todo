@@ -152,6 +152,33 @@ The authentication system consists of several key components:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## OpenAI ChatKit Setup
+
+To use the AI-powered chatbot feature at `/chat`, you need to configure OpenAI ChatKit:
+
+### 1. Register Domain in OpenAI Platform
+
+1. Go to the [OpenAI Platform](https://platform.openai.com/) and sign in to your account
+2. Navigate to the ChatKit section
+3. Register your domains for both development and production:
+   - For local development: Add `localhost` to the allowed domains
+   - For production: Add your deployed domain (e.g., `your-app-name.vercel.app`)
+
+### 2. Set NEXT_PUBLIC_OPENAI_DOMAIN_KEY in Vercel
+
+1. In your Vercel project dashboard, go to Settings → Environment Variables
+2. Add a new environment variable:
+   - Key: `NEXT_PUBLIC_OPENAI_DOMAIN_KEY`
+   - Value: The domain key provided by OpenAI after registering your domains
+
+### 3. Local Development Setup
+
+1. Copy the `.env.local.example` file to `.env.local`:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+2. Update the `NEXT_PUBLIC_OPENAI_DOMAIN_KEY` value in `.env.local` with your OpenAI domain key
+
 ## License
 
 This project is licensed under the MIT License.

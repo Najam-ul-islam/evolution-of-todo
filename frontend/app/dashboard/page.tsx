@@ -4,7 +4,11 @@
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, CheckSquare, BarChart3 } from 'lucide-react';
+import FloatingChatWidget from '@/components/FloatingChatWidget';
+import LogOut from 'lucide-react/dist/esm/icons/log-out';
+import User from 'lucide-react/dist/esm/icons/user';
+import CheckSquare from 'lucide-react/dist/esm/icons/check-square';
+import BarChart3 from 'lucide-react/dist/esm/icons/bar-chart-3';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -43,7 +47,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white card-elevated">
             <div className="flex items-center gap-3 mb-3">
               <User className="h-8 w-8" />
@@ -77,6 +81,22 @@ export default function DashboardPage() {
             <p className="opacity-90">Track your productivity and progress</p>
             <Button className="mt-4 bg-white text-emerald-600 hover:bg-emerald-50">
               View Analytics
+            </Button>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-6 text-white card-elevated">
+            <div className="flex items-center gap-3 mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <h3 className="text-xl font-bold">Chat</h3>
+            </div>
+            <p className="opacity-90">Chat with our AI assistant</p>
+            <Button
+              onClick={() => router.push('/chat')}
+              className="mt-4 bg-white text-orange-600 hover:bg-orange-50"
+            >
+              Open Chat
             </Button>
           </div>
         </div>

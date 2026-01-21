@@ -1,0 +1,221 @@
+openapi: 3.0.3
+info:
+  title: AI Agent Behavior and Tool Orchestration API
+  description: API for deterministic AI agent that interprets user messages, selects appropriate MCP tools, and generates conversational responses
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: https://staging-api.example.com
+    description: Staging server
+
+paths:
+  /api/{user_id}/:
+    post:
+      tags:
+        - chat
+      summary: Process a chat message with the AI agent
+      description: |
+        Process a natural language message from a user and return an AI-generated response
+        with tool usage metadata. The agent follows deterministic rules for tool selection
+        and performs multi-step reasoning when needed.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The ID of the user making the request
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response from the AI agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user ID mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Conversation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+  /api/tools/available:
+    get:
+      tags:
+        - tools
+      summary: List available MCP tools
+      description: Get a list of all available MCP tools that the AI agent can use
+      responses:
+        '200':
+          description: List of available tools
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolListResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        conversation_id:
+          type: integer
+          description: ID of the conversation to continue (optional, creates new if omitted)
+          example: 123
+        message:
+          type: string
+          description: The user's message to process
+          minLength: 1
+          maxLength: 1000
+          example: "Add a task to buy groceries"
+
+    ChatResponse:
+      type: object
+      required:
+        - conversation_id
+        - response
+        - tool_calls
+      properties:
+        conversation_id:
+          type: integer
+          description: ID of the conversation
+          example: 123
+        response:
+          type: string
+          description: The AI agent's response to the user
+          example: "I've added the task 'buy groceries' to your list."
+        tool_calls:
+          type: array
+          description: List of tools that were called during processing
+          items:
+            $ref: '#/components/schemas/ToolCall'
+
+    ToolCall:
+      type: object
+      required:
+        - tool_name
+        - tool_input
+        - result
+      properties:
+        tool_name:
+          type: string
+          description: Name of the tool that was called
+          example: "add_task"
+        tool_input:
+          type: object
+          description: Parameters passed to the tool
+          example:
+            task: "buy groceries"
+        result:
+          type: object
+          description: Result returned by the tool (nullable if not executed)
+          example:
+            success: true
+            task_added: "buy groceries"
+            todo_id: 456
+
+    ToolListResponse:
+      type: object
+      required:
+        - tools
+      properties:
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/MCPTool'
+
+    MCPTool:
+      type: object
+      required:
+        - name
+        - description
+        - parameters
+      properties:
+        name:
+          type: string
+          description: Name of the MCP tool
+          example: "add_task"
+        description:
+          type: string
+          description: Description of what the tool does
+          example: "Add a new task to the user's list"
+        parameters:
+          type: object
+          description: JSON schema defining the tool's parameters
+
+    ErrorResponse:
+      type: object
+      required:
+        - error_code
+        - message
+      properties:
+        error_code:
+          type: string
+          description: Code identifying the type of error
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Message cannot be empty"
+        details:
+          type: object
+          description: Additional error details (optional)
+          example:
+            field: "message"
+            value: ""
+
+tags:
+  - name: chat
+    description: Chat interface with AI agent
+  - name: tools
+    description: MCP tools management

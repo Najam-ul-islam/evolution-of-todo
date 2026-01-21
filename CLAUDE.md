@@ -210,10 +210,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
-- 001-persistent-storage: Added Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, asyncpg 0.29.0+, psycopg2-binary 2.9.7+
-- 001-restful-api: Added Python 3.11+ + FastAPI 0.104+, python-jose 3.3.0+, passlib 1.7.4+, SQLModel 0.0.16+
-- 001-backend-scaffolding: Added Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, uv 0.2+
+- 001-ai-agent-behavior: Added Python 3.11 + OpenAI Agents SDK, FastAPI, SQLModel, asyncpg
+- 001-mcp-task-tools: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+- 001-chatbot-api: Added Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, OpenAI Agents SDK, python-jose, passlib
 
 ## Active Technologies
-- Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, asyncpg 0.29.0+, psycopg2-binary 2.9.7+ (001-persistent-storage)
-- PostgreSQL (NeonDB) - configured via DATABASE_URL environment variable (001-persistent-storage)
+- Python 3.11 + OpenAI Agents SDK, FastAPI, SQLModel, asyncpg (001-ai-agent-behavior)
+- PostgreSQL (via SQLModel and asyncpg) (001-ai-agent-behavior)

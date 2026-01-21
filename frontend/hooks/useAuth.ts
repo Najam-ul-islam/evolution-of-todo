@@ -65,6 +65,7 @@ const useAuth = (): UseAuthReturn => {
         }
       };
 
+      // Call the async function inside the effect
       checkAuthStatus();
     } else {
       // In SSR, set loading to false immediately

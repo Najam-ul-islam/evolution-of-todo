@@ -8,7 +8,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Lock, Mail, User, ArrowLeft } from 'lucide-react';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import Mail from 'lucide-react/dist/esm/icons/mail';
+import User from 'lucide-react/dist/esm/icons/user';
+import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('');

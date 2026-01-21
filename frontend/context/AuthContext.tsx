@@ -128,7 +128,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    restoreSession();
+    const initializeAuth = async () => {
+      await restoreSession();
+    };
+    initializeAuth();
   }, []);
 
   const value = {
