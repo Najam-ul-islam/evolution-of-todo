@@ -64,11 +64,11 @@ export default function SignInPage() {
               </div>
             )}
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-address" className="text-foreground font-semibold">Email Address</Label>
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label htmlFor="email-address" className="text-foreground font-bold text-lg">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="email-address"
                     name="email"
@@ -77,16 +77,16 @@ export default function SignInPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="pl-10 bg-background border-2 border-input focus:border-primary focus:ring-0 transition-all duration-200"
+                    placeholder="Enter your email address"
+                    className="pl-12 bg-background border-2 border-input focus:border-primary focus:ring-0 transition-all duration-200 h-14 text-lg py-6"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground font-semibold">Password</Label>
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-foreground font-bold text-lg">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     id="password"
                     name="password"
@@ -96,7 +96,7 @@ export default function SignInPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10 bg-background border-2 border-input focus:border-primary focus:ring-0 transition-all duration-200"
+                    className="pl-12 bg-background border-2 border-input focus:border-primary focus:ring-0 transition-all duration-200 h-14 text-lg py-6"
                   />
                 </div>
               </div>
@@ -106,15 +106,15 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-700 text-primary-foreground font-semibold py-6 text-lg btn-gradient"
+                className="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-700 text-primary-foreground font-bold text-lg py-6 btn-gradient"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                    Signing In...
+                    <span className="text-base">Signing In...</span>
                   </div>
                 ) : (
-                  'Sign In'
+                  <span className="text-lg font-bold">Sign In</span>
                 )}
               </Button>
             </div>
