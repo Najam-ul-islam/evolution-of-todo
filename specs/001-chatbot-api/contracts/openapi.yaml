@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Conversational Chatbot API
+  description: Stateless HTTP-based chat interface that allows users to interact with the Todo system using natural language
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.example.com
+    description: Production server
+
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Process a chat message in a conversation
+      description: Handles natural language messages from users and returns AI-generated responses with tool usage metadata
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The ID of the user making the request
+          schema:
+            type: integer
+            example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response from the AI agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '400':
+          description: Bad request - invalid input parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not have access to the specified conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found - specified conversation does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        conversation_id:
+          type: integer
+          description: Optional ID of an existing conversation to continue
+          example: 456
+        message:
+          type: string
+          description: The natural language message from the user
+          example: "Add a task to buy groceries for tomorrow"
+          minLength: 1
+      example:
+        conversation_id: 456
+        message: "Add a task to buy groceries for tomorrow"
+
+    ChatResponse:
+      type: object
+      required:
+        - conversation_id
+        - response
+        - tool_calls
+      properties:
+        conversation_id:
+          type: integer
+          description: ID of the conversation (newly created or existing)
+          example: 456
+        response:
+          type: string
+          description: AI-generated response to the user's message
+          example: "I've added the task 'buy groceries for tomorrow' to your todo list."
+        tool_calls:
+          type: array
+          description: Array of tools called by the AI agent during processing
+          items:
+            $ref: '#/components/schemas/ToolCall'
+      example:
+        conversation_id: 456
+        response: "I've added the task 'buy groceries for tomorrow' to your todo list."
+        tool_calls:
+          - tool_name: "add_todo_item"
+            tool_input:
+              task: "buy groceries for tomorrow"
+            result:
+              success: true
+              todo_id: 789
+
+    ToolCall:
+      type: object
+      required:
+        - tool_name
+        - tool_input
+      properties:
+        tool_name:
+          type: string
+          description: Name of the tool that was called
+          example: "add_todo_item"
+        tool_input:
+          type: object
+          description: Parameters passed to the tool
+          example:
+            task: "buy groceries for tomorrow"
+        result:
+          type: object
+          description: Result returned by the tool (may be null if not yet completed)
+          nullable: true
+          example:
+            success: true
+            todo_id: 789
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: "INVALID_INPUT"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Message field is required and cannot be empty"
+
+security:
+  - BearerAuth: []

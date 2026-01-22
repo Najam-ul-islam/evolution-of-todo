@@ -210,4 +210,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
 
 ## Recent Changes
-- 001-todo-console-app: Implemented Phase I - Todo In-Memory Python Console Application with full CRUD functionality, CLI interface, and in-memory task management
+- 001-ai-agent-behavior: Added Python 3.11 + OpenAI Agents SDK, FastAPI, SQLModel, asyncpg
+- 001-mcp-task-tools: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+- 001-chatbot-api: Added Python 3.11+ + FastAPI 0.104+, SQLModel 0.0.16+, OpenAI Agents SDK, python-jose, passlib
+
+## Active Technologies
+- Python 3.11 + OpenAI Agents SDK, FastAPI, SQLModel, asyncpg (001-ai-agent-behavior)
+- PostgreSQL (via SQLModel and asyncpg) (001-ai-agent-behavior)

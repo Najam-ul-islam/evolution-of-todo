@@ -3,14 +3,40 @@ name = "todo-console-app"
 version = "0.1.0"
 description = "A clean, maintainable, in-memory todo application that runs in the terminal"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Najam-ul-islam", email = "najam.capricon88@gmail.com"}
 ]
+dependencies = [
+    "openai>=2.15.0",
+]
 
 [project.scripts]
 todo = "main:main"
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "sqlmodel>=0.0.16",
+    "asyncpg>=0.29.0",
+    "psycopg2-binary>=2.9.7",
+    "python-jose>=3.3.0",
+    "passlib>=1.7.4",
+    "uvicorn>=0.24.0",
+    "python-multipart>=0.0.6",
+    "openai>=1.0.0",
+    "httpx>=0.25.0",
+    "mcp-sdk>=1.0.0"  # Official MCP SDK
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "black>=24.0.0",
+    "flake8>=7.0.0",
+    "isort>=5.0.0",
+    "uvicorn>=0.24.0"
+]
 
 [tool.uv]
 dev-dependencies = [

@@ -1,42 +1,44 @@
-# Implementation Plan: Todo Console Application
+# Implementation Plan: [FEATURE]
 
-**Branch**: `001-todo-console-app` | **Date**: 2026-01-04 | **Spec**: [link to spec](spec.md)
-**Input**: Feature specification from `/specs/001-todo-console-app/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 **Note**: This template is filled in by the `/sp.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-Implementation of a clean, maintainable, in-memory todo application that runs in the terminal. The application will follow a clean architecture with clear separation of concerns between the CLI interface, business logic, and data models. The design includes auto-incrementing task IDs, comprehensive error handling, and a unidirectional data flow to ensure testability and maintainability.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: Python 3.13+
-**Primary Dependencies**: UV for dependency management, no external frameworks
-**Storage**: In-memory only, no persistence to disk or database
-**Testing**: pytest for unit and integration tests
-**Target Platform**: Cross-platform console application (Linux, macOS, Windows)
-**Project Type**: Single console application
-**Performance Goals**: All operations complete in under 2 seconds for typical usage
-**Constraints**: No persistence to disk, clean separation of UI and business logic, PEP-8 compliance
-**Scale/Scope**: Single-user console application, designed for personal task management
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
+
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - determines source structure]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Based on the Evolution of Todo Constitution:
-- ✅ Spec-Driven Development: Following approved specification document
-- ✅ Mandatory Workflow Compliance: Following /sp.constitution → /sp.specify → /sp.plan → /sp.task → /sp.implement
-- ✅ Engineering & AI Standards: Clean, modular architecture with explicit state management
-- ✅ Deliverable Quality Gates: Working implementation per phase is mandatory
+[Gates determined based on constitution file]
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/001-todo-console-app/
+specs/[###-feature]/
 ├── plan.md              # This file (/sp.plan command output)
 ├── research.md          # Phase 0 output (/sp.plan command)
 ├── data-model.md        # Phase 1 output (/sp.plan command)
@@ -46,27 +48,51 @@ specs/001-todo-console-app/
 ```
 
 ### Source Code (repository root)
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
 
 ```text
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── main.py              # CLI entry point
-└── todo/                # Todo application module
-    ├── models.py        # Task model and data validation
-    ├── service.py       # Task management business logic
-    └── cli.py           # CLI menu and input handling
+├── models/
+├── services/
+├── cli/
+└── lib/
 
 tests/
-├── unit/
-│   ├── test_models.py   # Task model tests
-│   ├── test_service.py  # Task service tests
-│   └── test_cli.py      # CLI interface tests
+├── contract/
 ├── integration/
-│   └── test_end_to_end.py  # End-to-end integration tests
-└── contract/
-    └── test_api_contracts.py  # API contract compliance tests
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Single project structure with clear separation of concerns between models, services, and CLI interface. The structure follows the clean architecture pattern with business logic separated from UI concerns.
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
@@ -74,4 +100,5 @@ tests/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [N/A] | [No violations identified] | [N/A] |
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
