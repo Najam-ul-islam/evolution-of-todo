@@ -4,6 +4,18 @@
  */
 
 // Define types for better type safety
+interface ToolCallSchema {
+  tool_name: string;
+  tool_input: Record<string, any>;
+  result?: Record<string, any>;
+}
+
+interface ChatResponse {
+  response: string;
+  conversation_id: number;
+  tool_calls: ToolCallSchema[];
+}
+
 interface ErrorResponse {
   error: string;
   message?: string;
@@ -19,11 +31,33 @@ interface ErrorResponse {
  * @throws Error if the request fails
  */
 export const sendAuthenticatedMessage = async (
-  request: { message: string; conversation_id?: string },
+  request: { message: string; conversation_id?: string | number },
   userId: string,
   token: string
-): Promise<{ response: string; conversation_id: string }> => {
+): Promise<ChatResponse> => {
   try {
+    // Convert conversation_id to proper format if provided
+    let processedConversationId: number | undefined = undefined;
+    if (request.conversation_id !== undefined && request.conversation_id !== null) {
+      if (typeof request.conversation_id === 'string') {
+        // Try to parse the string as an integer
+        const parsedId = parseInt(request.conversation_id, 10);
+        if (isNaN(parsedId) || parsedId <= 0) {
+          console.warn(`Invalid conversation ID string: "${request.conversation_id}", starting new conversation`);
+          processedConversationId = undefined;
+        } else {
+          processedConversationId = parsedId;
+        }
+      } else if (typeof request.conversation_id === 'number') {
+        if (request.conversation_id <= 0) {
+          console.warn(`Invalid conversation ID number: ${request.conversation_id}, starting new conversation`);
+          processedConversationId = undefined;
+        } else {
+          processedConversationId = request.conversation_id;
+        }
+      }
+    }
+
     // Construct the API endpoint URL
     const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'}/${userId}/chat`;
 
@@ -36,7 +70,7 @@ export const sendAuthenticatedMessage = async (
       },
       body: JSON.stringify({
         message: request.message,
-        conversation_id: request.conversation_id,
+        conversation_id: processedConversationId,
       }),
     });
 

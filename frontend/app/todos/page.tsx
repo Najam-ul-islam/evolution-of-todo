@@ -23,18 +23,7 @@ export default function TodosPage() {
   const router = useRouter();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loadingTodos, setLoadingTodos] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/sign-in");
-    } else if (user) {
-      const fetchTodos = async () => {
-        await loadTodos();
-      };
-      fetchTodos();
-    }
-  }, [user, loading, router]);
+  const [error, setError] = useState<string | { detail?: any[] } | null>(null);
 
   const loadTodos = async () => {
     if (!user) return;
@@ -56,6 +45,38 @@ export default function TodosPage() {
     }
   };
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/sign-in");
+    } else if (user) {
+      const fetchTodos = async () => {
+        await loadTodos();
+      };
+      fetchTodos();
+    }
+  }, [user, loading, router]);
+
+  // Listen for todo changes from other parts of the app (e.g., chat assistant)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'todosUpdated' && e.newValue) {
+        loadTodos(); // Refresh the todos when notified via localStorage
+      }
+    };
+
+    const handleCustomEvent = () => {
+      loadTodos(); // Refresh the todos when notified via custom event
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('todosUpdated', handleCustomEvent);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('todosUpdated', handleCustomEvent);
+    };
+  }, [loadTodos]);
+
   const handleCreateTodo = async (
     title: string,
     description?: string,
@@ -74,7 +95,7 @@ export default function TodosPage() {
       );
 
       if (result.success && result.data) {
-        setTodos([...todos, result.data]);
+        setTodos(prevTodos => [...prevTodos, result.data!]);
       } else {
         setError(result.error?.message || "Failed to create todo");
       }
@@ -85,11 +106,13 @@ export default function TodosPage() {
   };
 
   const handleUpdateTodo = async (id: string, updates: Partial<Todo>) => {
+    if (!user) return;
+
     try {
-      const result = await todoService.updateTodo(id, updates);
+      const result = await todoService.updateTodoWithUserId(user.id, id, updates);
 
       if (result.success && result.data) {
-        setTodos(todos.map((todo) => (todo.id === id ? result.data! : todo)));
+        setTodos(prevTodos => prevTodos.map((todo) => (todo.id === id ? result.data! : todo)));
       } else {
         setError(result.error?.message || "Failed to update todo");
       }
@@ -100,11 +123,13 @@ export default function TodosPage() {
   };
 
   const handleDeleteTodo = async (id: string) => {
+    if (!user) return;
+
     try {
-      const result = await todoService.deleteTodo(id);
+      const result = await todoService.deleteTodo(user.id, id);
 
       if (result.success) {
-        setTodos(todos.filter((todo) => todo.id !== id));
+        setTodos(prevTodos => prevTodos.filter((todo) => todo.id !== id));
       } else {
         setError(result.error?.message || "Failed to delete todo");
       }
@@ -115,12 +140,14 @@ export default function TodosPage() {
   };
 
   const handleToggleCompletion = async (id: string) => {
+    if (!user) return;
+
     try {
-      const result = await todoService.toggleTodoCompletion(id);
+      const result = await todoService.toggleTodoCompletion(user.id, id);
 
       if (result.success && result.data) {
-        setTodos(
-          todos.map((todo) =>
+        setTodos(prevTodos =>
+          prevTodos.map((todo) =>
             todo.id === id
               ? { ...todo, completed: result.data!.completed }
               : todo,
@@ -275,7 +302,13 @@ export default function TodosPage() {
               role="alert"
             >
               <span>Error:</span>
-              <span>{error}</span>
+              <span>
+                {typeof error === 'string' ? error :
+                  typeof error === 'object' && error !== null && Array.isArray(error.detail) ?
+                    error.detail.map((e: any, i: number) =>
+                      `${e.loc?.slice(1).join('.') || 'Error'}: ${e.msg}`).join(', ') :
+                    'An unexpected error occurred. Please try again.'}
+              </span>
             </div>
           )}
 

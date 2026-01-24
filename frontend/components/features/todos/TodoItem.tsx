@@ -20,8 +20,25 @@ export default function TodoItem({ todo, onUpdate, onDelete, onToggleCompletion 
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(todo.title);
   const [editDescription, setEditDescription] = useState(todo.description);
-  const [editPriority, setEditPriority] = useState<'low' | 'medium' | 'high'>(todo.priority);
-  const [editDueDate, setEditDueDate] = useState<string>(todo.dueDate ? new Date(todo.dueDate).toISOString().split('T')[0] : '');
+  const [editPriority, setEditPriority] = useState<'low' | 'medium' | 'high'>(todo.priority || 'low');
+  const [editDueDate, setEditDueDate] = useState<string>(() => {
+    if (!todo.dueDate) return '';
+
+    let dateObj: Date;
+    if (todo.dueDate instanceof Date) {
+      dateObj = todo.dueDate;
+    } else if (typeof todo.dueDate === 'string') {
+      dateObj = new Date(todo.dueDate);
+    } else {
+      return '';
+    }
+
+    if (isNaN(dateObj.getTime())) {
+      return '';
+    }
+
+    return dateObj.toISOString().split('T')[0];
+  });
 
   const handleSave = () => {
     onUpdate(todo.id, {
@@ -36,8 +53,25 @@ export default function TodoItem({ todo, onUpdate, onDelete, onToggleCompletion 
   const handleCancel = () => {
     setEditTitle(todo.title);
     setEditDescription(todo.description);
-    setEditPriority(todo.priority);
-    setEditDueDate(todo.dueDate ? new Date(todo.dueDate).toISOString().split('T')[0] : '');
+    setEditPriority(todo.priority || 'low');
+    setEditDueDate(() => {
+      if (!todo.dueDate) return '';
+
+      let dateObj: Date;
+      if (todo.dueDate instanceof Date) {
+        dateObj = todo.dueDate;
+      } else if (typeof todo.dueDate === 'string') {
+        dateObj = new Date(todo.dueDate);
+      } else {
+        return '';
+      }
+
+      if (isNaN(dateObj.getTime())) {
+        return '';
+      }
+
+      return dateObj.toISOString().split('T')[0];
+    });
     setIsEditing(false);
   };
 
@@ -49,13 +83,32 @@ export default function TodoItem({ todo, onUpdate, onDelete, onToggleCompletion 
     onToggleCompletion(todo.id);
   };
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return '';
-    return new Date(date).toLocaleDateString();
+
+    let dateObj: Date;
+
+    // If it's already a Date object, use it directly
+    if (date instanceof Date) {
+      dateObj = date;
+    } else if (typeof date === 'string') {
+      // If it's a string, try to parse it
+      dateObj = new Date(date);
+    } else {
+      // If it's neither a Date nor a string, return empty
+      return '';
+    }
+
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      return 'Invalid Date';
+    }
+
+    return dateObj.toLocaleDateString();
   };
 
   // Determine priority class based on priority level
-  const getPriorityClass = (priority: string) => {
+  const getPriorityClass = (priority: string | undefined) => {
     switch(priority) {
       case 'high':
         return 'bg-gradient-to-r from-red-500 to-red-600 text-white';
@@ -137,8 +190,8 @@ export default function TodoItem({ todo, onUpdate, onDelete, onToggleCompletion 
                   <h3 className={`text-lg font-semibold ${todo.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                     {todo.title}
                   </h3>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityClass(todo.priority)}`}>
-                    {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${getPriorityClass(todo.priority || 'low')}`}>
+                    {(todo.priority ? todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1) : 'Low')}
                   </span>
                 </div>
 
@@ -158,7 +211,7 @@ export default function TodoItem({ todo, onUpdate, onDelete, onToggleCompletion 
 
                   <div className="flex items-center text-sm text-muted-foreground">
                     <Clock className="h-4 w-4 mr-1" />
-                    {new Date(todo.createdAt).toLocaleDateString()}
+                    {formatDate(todo.createdAt)}
                   </div>
                 </div>
               </div>

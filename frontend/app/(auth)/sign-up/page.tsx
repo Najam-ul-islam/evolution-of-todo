@@ -16,7 +16,7 @@ import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | { detail?: any[] } | null>('');
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
@@ -61,7 +61,11 @@ export default function SignUpPage() {
             {error && (
               <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-lg flex items-center gap-2" role="alert">
                 <span>Error:</span>
-                <span>{error}</span>
+                {typeof error === 'string' ? error :
+      typeof error === 'object' && error !== null && Array.isArray(error.detail) ?
+        error.detail.map((e: any, i: number) =>
+          `${e.loc?.slice(1).join('.') || 'Error'}: ${e.msg}`).join(', ') :
+        'An unexpected error occurred. Please try again.'}
               </div>
             )}
 

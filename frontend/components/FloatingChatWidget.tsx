@@ -10,7 +10,7 @@ interface FloatingChatWidgetProps {
 
 const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = ({ domainKey = process.env.NEXT_PUBLIC_OPENAI_DOMAIN_KEY || '' }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [conversationId, setConversationId] = useState<string | undefined>();
+  const [conversationId, setConversationId] = useState<number | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<Array<{id: string; text: string; sender: string; timestamp: string}>>([]);
   const [inputValue, setInputValue] = useState('');
@@ -21,11 +21,38 @@ const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = ({ domainKey = pro
   useEffect(() => {
     const checkSession = async () => {
       setIsLoading(true);
+
+      // Check if there's a user ID stored in localStorage and compare with current user
+      let storedUserId = null;
+      if (typeof window !== 'undefined') {
+        storedUserId = localStorage.getItem('current_user_id');
+      }
+
       const result = await authService.getCurrentUser();
-      if (result.success) {
+      if (result.success && result.data) {
+        // Check if the user has changed since last session
+        if (storedUserId && storedUserId !== result.data.id) {
+          // User has changed, clear the conversation ID and stored user ID
+          setConversationId(undefined);
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('current_conversation_id');
+          }
+        }
+
+        // Store the current user ID
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('current_user_id', result.data.id);
+        }
+
         setSession(result.data);
       } else {
         setSession(null);
+        // Clear conversation ID when user is not authenticated
+        setConversationId(undefined);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('current_conversation_id');
+          localStorage.removeItem('current_user_id');
+        }
       }
       setIsLoading(false);
     };
@@ -36,8 +63,13 @@ const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = ({ domainKey = pro
   // Restore conversation from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedId = localStorage.getItem('current_conversation_id');
-      if (storedId) setConversationId(storedId);
+      const storedIdStr = localStorage.getItem('current_conversation_id');
+      if (storedIdStr) {
+        const storedId = parseInt(storedIdStr, 10);
+        if (!isNaN(storedId) && storedId > 0) {
+          setConversationId(storedId);
+        }
+      }
     }
   }, []);
 
@@ -70,16 +102,77 @@ const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = ({ domainKey = pro
       if (response.conversation_id !== conversationId) {
         setConversationId(response.conversation_id);
         if (typeof window !== 'undefined') {
-          localStorage.setItem('current_conversation_id', response.conversation_id);
+          localStorage.setItem('current_conversation_id', response.conversation_id.toString());
         }
       }
 
-      setMessages(prev => [...prev, {
+      // Process the response and tool calls to create the appropriate messages
+      let responseText = response.response;
+
+      // Check if there are tool calls with results to display
+      if (response.tool_calls && Array.isArray(response.tool_calls)) {
+        for (const toolCall of response.tool_calls) {
+          if (toolCall.tool_name === 'list_tasks' && toolCall.result && toolCall.result.success) {
+            // Format the task list for display
+            const tasks = toolCall.result.tasks || [];
+            if (tasks.length > 0) {
+              const taskListText = `\n\nHere are your tasks:\n${tasks.map((task: any, index: number) =>
+                `${index + 1}. ${task.title}${task.completed ? ' ✓' : ' ○'}`
+              ).join('\n')}`;
+              responseText += taskListText;
+            } else {
+              responseText += "\n\nYou don't have any tasks yet.";
+            }
+          } else if (toolCall.tool_name === 'update_task' && toolCall.result) {
+            // Handle update_task results
+            if (toolCall.result.success) {
+              if (toolCall.result.title_updated) {
+                responseText += `\n\nTask updated successfully. New title: "${toolCall.result.title_updated}".`;
+              }
+              if (toolCall.result.description_updated) {
+                responseText += `\nDescription updated to: "${toolCall.result.description_updated}".`;
+              }
+            } else {
+              responseText += `\n\nFailed to update task: ${toolCall.result.error || 'Unknown error'}`;
+            }
+          } else if (toolCall.tool_name === 'delete_task' && toolCall.result) {
+            // Handle delete_task results
+            if (toolCall.result.success) {
+              responseText += `\n\nTask deleted successfully.`;
+            } else {
+              responseText += `\n\nFailed to delete task: ${toolCall.result.error || 'Unknown error'}`;
+            }
+          } else if (toolCall.tool_name === 'complete_task' && toolCall.result) {
+            // Handle complete_task results
+            if (toolCall.result.success) {
+              const status = toolCall.result.completed ? 'completed' : 'marked as incomplete';
+              responseText += `\n\nTask ${status} successfully.`;
+            } else {
+              responseText += `\n\nFailed to update task completion: ${toolCall.result.error || 'Unknown error'}`;
+            }
+          }
+        }
+      }
+
+      const newMessage = {
         id: (Date.now() + 1).toString(),
-        text: response.response,
+        text: responseText,
         sender: 'assistant',
         timestamp: new Date().toISOString(),
-      }]);
+      };
+
+      setMessages(prev => [...prev, newMessage]);
+
+      // Check if the response includes tool calls that modify tasks (add, update, delete, complete)
+      // and notify other parts of the app to refresh the todos list
+      if (response.tool_calls && response.tool_calls.some(call =>
+        ['add_task', 'update_task', 'delete_task', 'complete_task'].includes(call.tool_name)
+      )) {
+        // Trigger a refresh of the todos list in other parts of the app
+        localStorage.setItem('todosUpdated', Date.now().toString());
+        // Dispatch a custom event for same-window updates
+        window.dispatchEvent(new Event('todosUpdated'));
+      }
     } catch (err) {
       console.error('Error sending message:', err);
       let errorMessage = 'Failed to send message';
@@ -89,8 +182,9 @@ const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = ({ domainKey = pro
           errorMessage = 'Authentication required. Please log in again.';
         } else if (err.message.includes('fetch')) {
           errorMessage = 'Network error. Please check your connection.';
-        } else if (err.message.includes('Conversation not found')) {
+        } else if (err.message.includes('Conversation not found') || err.message.includes('access denied')) {
           errorMessage = 'Starting a new conversation.';
+          setError('Conversation not found or access denied. Starting a new conversation.');
           setConversationId(undefined);
           if (typeof window !== 'undefined') {
             localStorage.removeItem('current_conversation_id');
