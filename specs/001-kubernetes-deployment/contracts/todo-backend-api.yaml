@@ -1,0 +1,247 @@
+# API Contract: Todo Chatbot Backend API
+
+**Version**: 1.0.0
+**Date**: 2026-01-24
+**Feature**: 001-kubernetes-deployment
+
+## Overview
+This document defines the API contract between the frontend and backend services in the Todo Chatbot application when deployed to Kubernetes. This contract ensures proper service-to-service communication within the cluster.
+
+## Base URL
+```
+http://todo-chatbot-backend.default.svc.cluster.local:8000
+```
+
+## Endpoints
+
+### Health Check
+```
+GET /health
+```
+
+#### Description
+Health check endpoint to verify backend service availability.
+
+#### Request
+- Method: GET
+- Path: `/health`
+- Headers: None required
+- Query Parameters: None
+- Body: None
+
+#### Response
+- Success: 200 OK
+- Content-Type: application/json
+- Response Body:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-01-24T10:00:00Z",
+  "version": "1.0.0"
+}
+```
+
+### Ready Check
+```
+GET /ready
+```
+
+#### Description
+Readiness check endpoint to verify backend service is ready to accept traffic.
+
+#### Request
+- Method: GET
+- Path: `/ready`
+- Headers: None required
+- Query Parameters: None
+- Body: None
+
+#### Response
+- Success: 200 OK
+- Content-Type: application/json
+- Response Body:
+```json
+{
+  "status": "ready",
+  "timestamp": "2026-01-24T10:00:00Z",
+  "version": "1.0.0"
+}
+```
+
+### Create Todo
+```
+POST /todos
+```
+
+#### Description
+Creates a new todo item.
+
+#### Request
+- Method: POST
+- Path: `/todos`
+- Headers:
+  - Content-Type: application/json
+- Query Parameters: None
+- Body:
+```json
+{
+  "title": "string",
+  "description": "string",
+  "priority": "low|medium|high",
+  "due_date": "string (ISO 8601 format)"
+}
+```
+
+#### Response
+- Success: 201 Created
+- Content-Type: application/json
+- Response Body:
+```json
+{
+  "id": "string",
+  "title": "string",
+  "description": "string",
+  "priority": "low|medium|high",
+  "due_date": "string (ISO 8601 format)",
+  "created_at": "string (ISO 8601 format)",
+  "updated_at": "string (ISO 8601 format)",
+  "status": "pending|in-progress|completed"
+}
+```
+
+### Get Todos
+```
+GET /todos
+```
+
+#### Description
+Retrieves a list of todo items with optional filtering.
+
+#### Request
+- Method: GET
+- Path: `/todos`
+- Headers: None required
+- Query Parameters:
+  - status: string (filter by status: pending, in-progress, completed)
+  - priority: string (filter by priority: low, medium, high)
+  - limit: integer (limit number of results)
+  - offset: integer (offset for pagination)
+- Body: None
+
+#### Response
+- Success: 200 OK
+- Content-Type: application/json
+- Response Body:
+```json
+{
+  "todos": [
+    {
+      "id": "string",
+      "title": "string",
+      "description": "string",
+      "priority": "low|medium|high",
+      "due_date": "string (ISO 8601 format)",
+      "created_at": "string (ISO 8601 format)",
+      "updated_at": "string (ISO 8601 format)",
+      "status": "pending|in-progress|completed"
+    }
+  ],
+  "total": "integer",
+  "limit": "integer",
+  "offset": "integer"
+}
+```
+
+### Update Todo
+```
+PUT /todos/{id}
+```
+
+#### Description
+Updates an existing todo item.
+
+#### Request
+- Method: PUT
+- Path: `/todos/{id}`
+- Headers:
+  - Content-Type: application/json
+- Path Parameters:
+  - id: string (todo item ID)
+- Query Parameters: None
+- Body:
+```json
+{
+  "title": "string",
+  "description": "string",
+  "priority": "low|medium|high",
+  "due_date": "string (ISO 8601 format)",
+  "status": "pending|in-progress|completed"
+}
+```
+
+#### Response
+- Success: 200 OK
+- Content-Type: application/json
+- Response Body:
+```json
+{
+  "id": "string",
+  "title": "string",
+  "description": "string",
+  "priority": "low|medium|high",
+  "due_date": "string (ISO 8601 format)",
+  "created_at": "string (ISO 8601 format)",
+  "updated_at": "string (ISO 8601 format)",
+  "status": "pending|in-progress|completed"
+}
+```
+
+### Delete Todo
+```
+DELETE /todos/{id}
+```
+
+#### Description
+Deletes a todo item.
+
+#### Request
+- Method: DELETE
+- Path: `/todos/{id}`
+- Headers: None required
+- Path Parameters:
+  - id: string (todo item ID)
+- Query Parameters: None
+- Body: None
+
+#### Response
+- Success: 204 No Content
+- Content-Type: application/json
+- Response Body: None
+
+## Error Responses
+
+### General Error Format
+```json
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": "object (optional)"
+  }
+}
+```
+
+### Common Error Codes
+- 400 Bad Request: Invalid request format or parameters
+- 404 Not Found: Resource does not exist
+- 409 Conflict: Resource conflict (e.g., duplicate)
+- 500 Internal Server Error: Server-side error
+
+## Security
+- All endpoints are accessible within the Kubernetes cluster without authentication
+- Communication occurs over HTTP within the cluster (encrypted at infrastructure level)
+- Service mesh (if implemented) would provide mTLS encryption
+
+## Rate Limiting
+- Default rate limit: 1000 requests per minute per service
+- Rate limiting headers included in responses when approaching limits
